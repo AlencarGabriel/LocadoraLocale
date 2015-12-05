@@ -1,0 +1,259 @@
+-- phpMyAdmin SQL Dump
+-- version 4.5.2
+-- http://www.phpmyadmin.net
+--
+-- Host: 127.0.0.1
+-- Generation Time: 05-Dez-2015 às 05:29
+-- Versão do servidor: 5.6.16
+-- PHP Version: 5.5.9
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `locadora`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `aluguel`
+--
+
+CREATE TABLE `aluguel` (
+  `idALUGUEL` int(11) NOT NULL,
+  `idVEICULO` int(11) NOT NULL,
+  `idCLIENTE` int(11) NOT NULL,
+  `idFUNCIONARIO` int(11) NOT NULL,
+  `idFILIAL` int(11) NOT NULL,
+  `idFILIAL_DEVOLUCAO` int(11) DEFAULT NULL,
+  `DATA_ALUGUEL` date NOT NULL,
+  `DATA_PREV_ENTREGA` date DEFAULT NULL,
+  `DATA_DEVOLUCAO` date DEFAULT NULL,
+  `VALOR_PAGO` decimal(12,2) DEFAULT NULL,
+  `VALOR_MULTA` decimal(12,2) DEFAULT NULL,
+  `KM_INICIAL` int(11) DEFAULT NULL,
+  `KM_DEVOLUCAO` int(11) DEFAULT NULL,
+  `KM_RODADOS` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='TABELA QUE IRA ARMAZENAR AS LOCAÇÕES DE VEICULOS';
+
+--
+-- Acionadores `aluguel`
+--
+DELIMITER $$
+CREATE TRIGGER `aluguel_AFTER_UPDATE` AFTER UPDATE ON `aluguel` FOR EACH ROW BEGIN
+    IF NEW.KM_DEVOLUCAO > 0 THEN
+       UPDATE VEICULOS A SET A.KM_ATUAL = NEW.KM_DEVOLUCAO WHERE A.idVEICULO = NEW.idVEICULO;
+    END IF;
+    
+    IF NEW.DATA_DEVOLUCAO IS NOT NULL THEN
+      UPDATE VEICULOS A SET A.VEICULO_LOCADO = 0 WHERE A.idVEICULO = NEW.idVEICULO; 
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `aluguel_BEFORE_INSERT` BEFORE INSERT ON `aluguel` FOR EACH ROW BEGIN
+    IF NEW.KM_INICIAL IS NULL THEN 
+    SET NEW.KM_INICIAL = (SELECT A.KM_ATUAL FROM VEICULOS A WHERE A.idVEICULO = NEW.idVEICULO);
+  END IF;
+  
+  
+      UPDATE VEICULOS A SET A.VEICULO_LOCADO = 1 WHERE A.idVEICULO = NEW.idVEICULO; 
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `aluguel_BEFORE_UPDATE` BEFORE UPDATE ON `aluguel` FOR EACH ROW BEGIN
+    IF NEW.KM_DEVOLUCAO > 0 THEN
+	    SET NEW.KM_RODADOS = (NEW.KM_DEVOLUCAO - NEW.KM_INICIAL);
+    END IF;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `clientes`
+--
+
+CREATE TABLE `clientes` (
+  `idCLIENTE` int(11) NOT NULL,
+  `NOME` varchar(50) NOT NULL,
+  `TELEFONE` varchar(50) DEFAULT NULL,
+  `DATA_NASCIMENTO` date DEFAULT NULL,
+  `SEXO` char(1) DEFAULT NULL,
+  `TIPO_PESSOA` char(1) DEFAULT NULL,
+  `RUA` varchar(50) DEFAULT NULL,
+  `NUMERO` varchar(50) DEFAULT NULL,
+  `BAIRRO` varchar(50) DEFAULT NULL,
+  `CIDADE` varchar(50) DEFAULT NULL,
+  `ESTADO` varchar(2) DEFAULT NULL COMMENT 'UF',
+  `CPF` varchar(15) DEFAULT NULL,
+  `RG` varchar(20) DEFAULT NULL,
+  `CNPJ` varchar(20) DEFAULT NULL,
+  `INSC_ESTADUAL` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='TABELA QUE IRA ARMAZENAR OS CLIENTES';
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `filiais`
+--
+
+CREATE TABLE `filiais` (
+  `idFILIAL` int(11) NOT NULL,
+  `NOME_FILIAL` varchar(50) NOT NULL,
+  `CIDADE_FILIAL` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='TABELA QUE IRA GUARDAR AS FILIAIS';
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `funcionarios`
+--
+
+CREATE TABLE `funcionarios` (
+  `idFUNCIONARIO` int(11) NOT NULL,
+  `NOME` varchar(50) NOT NULL,
+  `RG` varchar(20) DEFAULT NULL,
+  `CPF` varchar(15) DEFAULT NULL,
+  `N_CARTEIRA_TRAB` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='TABELA QUE IRA GUARDAR OS FUNCIONARIOS';
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `veiculos`
+--
+
+CREATE TABLE `veiculos` (
+  `idVEICULO` int(11) NOT NULL,
+  `idFILIAL` int(11) DEFAULT NULL,
+  `NOME` varchar(50) NOT NULL,
+  `KM_INICIAL` int(11) DEFAULT NULL,
+  `KM_ATUAL` int(11) DEFAULT NULL,
+  `MODELO` varchar(50) DEFAULT NULL,
+  `CHASSI` varchar(50) DEFAULT NULL,
+  `ANO` year(4) DEFAULT NULL,
+  `PLACA` varchar(8) DEFAULT NULL,
+  `VALOR_DIARIA` decimal(12,2) DEFAULT NULL,
+  `MARCA` varchar(50) DEFAULT NULL,
+  `COR` varchar(50) DEFAULT NULL,
+  `VEICULO_LOCADO` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='TABELA QUE IRA GUARDAR OS VEICULOS	';
+
+--
+-- Acionadores `veiculos`
+--
+DELIMITER $$
+CREATE TRIGGER `veiculos_BEFORE_INSERT` BEFORE INSERT ON `veiculos` FOR EACH ROW BEGIN
+    IF (NEW.KM_INICIAL > 0) AND (NEW.KM_ATUAL IS NULL)  THEN
+    BEGIN
+       SET NEW.KM_ATUAL = NEW.KM_INICIAL; 
+    END;
+    END IF;
+END
+$$
+DELIMITER ;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `aluguel`
+--
+ALTER TABLE `aluguel`
+  ADD PRIMARY KEY (`idALUGUEL`),
+  ADD KEY `FK_ALUGUEL_FILIAL_idx` (`idFILIAL`),
+  ADD KEY `FK_ALUGUEL_CLIENTE_idx` (`idCLIENTE`),
+  ADD KEY `FK_ALUGUEL_FUNCIONARIO_idx` (`idFUNCIONARIO`),
+  ADD KEY `FK_ALUGUEL_VEICULO_idx` (`idVEICULO`),
+  ADD KEY `FK_ALUGUEL_FILIAL_DEVO_idx` (`idFILIAL_DEVOLUCAO`);
+
+--
+-- Indexes for table `clientes`
+--
+ALTER TABLE `clientes`
+  ADD PRIMARY KEY (`idCLIENTE`);
+
+--
+-- Indexes for table `filiais`
+--
+ALTER TABLE `filiais`
+  ADD PRIMARY KEY (`idFILIAL`),
+  ADD UNIQUE KEY `CIDADE_FILIAL_UNIQUE` (`CIDADE_FILIAL`);
+
+--
+-- Indexes for table `funcionarios`
+--
+ALTER TABLE `funcionarios`
+  ADD PRIMARY KEY (`idFUNCIONARIO`);
+
+--
+-- Indexes for table `veiculos`
+--
+ALTER TABLE `veiculos`
+  ADD PRIMARY KEY (`idVEICULO`),
+  ADD KEY `FK_VEICULOS_FILIAL_idx` (`idFILIAL`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `aluguel`
+--
+ALTER TABLE `aluguel`
+  MODIFY `idALUGUEL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+--
+-- AUTO_INCREMENT for table `clientes`
+--
+ALTER TABLE `clientes`
+  MODIFY `idCLIENTE` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+--
+-- AUTO_INCREMENT for table `filiais`
+--
+ALTER TABLE `filiais`
+  MODIFY `idFILIAL` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
+-- AUTO_INCREMENT for table `funcionarios`
+--
+ALTER TABLE `funcionarios`
+  MODIFY `idFUNCIONARIO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+--
+-- AUTO_INCREMENT for table `veiculos`
+--
+ALTER TABLE `veiculos`
+  MODIFY `idVEICULO` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Limitadores para a tabela `aluguel`
+--
+ALTER TABLE `aluguel`
+  ADD CONSTRAINT `FK_ALUGUEL_CLIENTE` FOREIGN KEY (`idCLIENTE`) REFERENCES `clientes` (`idCLIENTE`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_ALUGUEL_FILIAL` FOREIGN KEY (`idFILIAL`) REFERENCES `filiais` (`idFILIAL`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_ALUGUEL_FILIAL_DEVO` FOREIGN KEY (`idFILIAL_DEVOLUCAO`) REFERENCES `filiais` (`idFILIAL`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_ALUGUEL_FUNCIONARIO` FOREIGN KEY (`idFUNCIONARIO`) REFERENCES `funcionarios` (`idFUNCIONARIO`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  ADD CONSTRAINT `FK_ALUGUEL_VEICULO` FOREIGN KEY (`idVEICULO`) REFERENCES `veiculos` (`idVEICULO`) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+--
+-- Limitadores para a tabela `veiculos`
+--
+ALTER TABLE `veiculos`
+  ADD CONSTRAINT `FK_VEICULOS_FILIAL` FOREIGN KEY (`idFILIAL`) REFERENCES `filiais` (`idFILIAL`) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
