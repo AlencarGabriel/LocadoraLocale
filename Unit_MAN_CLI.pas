@@ -104,26 +104,27 @@ end;
 
 procedure TForm3.BotaoBuscarClick(Sender: TObject);
 begin
-  if RdComeca.Checked then
-  begin
-    ZQuery1.Filtered := false;
-    ZQuery1.Filter := ' NOME like ' + QuotedStr(EditBusca.Text + '*');
-    ZQuery1.Filtered := true;
-  end
-  else
-    if RdContem.Checked then
+  if EditBusca.Text <> '' then
+    if RdComeca.Checked then
     begin
       ZQuery1.Filtered := false;
-      ZQuery1.Filter := ' NOME like ' + QuotedStr('*' + EditBusca.Text + '*');
+      ZQuery1.Filter := ' NOME like ' + QuotedStr(EditBusca.Text + '*');
       ZQuery1.Filtered := true;
     end
     else
-      if RdCodigo.Checked then
+      if RdContem.Checked then
       begin
         ZQuery1.Filtered := false;
-        ZQuery1.Filter := ' idCLIENTE = ' + QuotedStr(EditBusca.Text);
+        ZQuery1.Filter := ' NOME like ' + QuotedStr('*' + EditBusca.Text + '*');
         ZQuery1.Filtered := true;
-      end;
+      end
+      else
+        if RdCodigo.Checked then
+        begin
+          ZQuery1.Filtered := false;
+          ZQuery1.Filter := ' idCLIENTE = ' + QuotedStr(EditBusca.Text);
+          ZQuery1.Filtered := true;
+        end;
 end;
 
 procedure TForm3.BotaoRemTarefaClick(Sender: TObject);

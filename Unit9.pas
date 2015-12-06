@@ -85,10 +85,10 @@ type
       Shift: TShiftState);
     procedure DBEdit12Exit(Sender: TObject);
     procedure Edit1KeyPress(Sender: TObject; var Key: Char);
-    procedure JvDBDateEdit3Exit(Sender: TObject);
     procedure cxDBCurrencyEdit1Exit(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure JvDBDateEdit3Exit(Sender: TObject);
   private
     procedure CalculaTotal;
   public
@@ -227,11 +227,6 @@ begin
     Key := #0
 end;
 
-procedure TForm9.JvDBDateEdit3Exit(Sender: TObject);
-begin
-  CalculaTotal;
-end;
-
 procedure TForm9.cxDBCurrencyEdit1Exit(Sender: TObject);
 begin
   CalculaTotal;
@@ -275,6 +270,11 @@ procedure TForm9.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   ZQuery1.Cancel;
   ZQuery1.Active := False;
+end;
+
+procedure TForm9.JvDBDateEdit3Exit(Sender: TObject);
+begin
+  CalculaTotal;
 end;
 
 end.

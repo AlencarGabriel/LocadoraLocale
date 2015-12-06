@@ -152,6 +152,7 @@ begin
       begin
         try
           Application.CreateForm(TForm7, Form7);
+          Form7.BotaoCadTarefaClick(Sender);
           Form7.ShowModal;
           ZQuery1idVEICULO.AsInteger := Form7.ZQuery1.FieldByName('idVEICULO').AsInteger;
           ZQuery1KM_INICIAL.AsInteger := Form7.ZQuery1.FieldByName('KM_ATUAL').AsInteger;
@@ -191,6 +192,7 @@ begin
       begin
         try
           Application.CreateForm(TForm3, Form3);
+          Form3.BotaoCadTarefaClick(Sender);
           Form3.ShowModal;
           ZQuery1idCLIENTE.AsInteger := Form3.ZQuery1.FieldByName('idCLIENTE').AsInteger;
           Label15.Caption := Form3.ZQuery1.FieldByName('NOME').AsString;

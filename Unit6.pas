@@ -110,7 +110,9 @@ begin
     cxDBLabel2.Visible := True;
     cxDBLabel3.Visible := True;
     JvgCheckBox1.Visible := True;
-  end;
+  end
+  else
+    DBEdit4.Enabled := True;
 end;
 
 procedure TForm6.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -125,7 +127,7 @@ begin
     ZQuery1.Post;
     ZQuery1.ApplyUpdates;
     if ZQuery1.State = dsInsert then
-    begin   
+    begin
       if Application.MessageBox('Deseja Cadastrar Outro Veículo?', 'Confirmação', mb_YesNo + mb_IconExclamation) = idyes then
       begin
         ZQuery1.Append;

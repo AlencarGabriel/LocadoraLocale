@@ -2,7 +2,7 @@ object Form3: TForm3
   Left = 140
   Top = 198
   Width = 856
-  Height = 459
+  Height = 460
   Caption = 'Manuten'#231#227'o Clientes'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

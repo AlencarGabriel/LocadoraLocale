@@ -393,7 +393,6 @@ object Form2: TForm2
     Width = 145
     Height = 41
     Caption = '&Salvar'
-    Default = True
     TabOrder = 3
     OnClick = BitBtn1Click
     Glyph.Data = {
